@@ -23,7 +23,7 @@
 |---|---|---|
 | **Юсупов Арсений Ринатович** | Модель данных (STL) и ввод-вывод | `Team`, `Player`, `LeagueRepository`, XML-хранилище (`DatabaseManager`), загрузчик фида и изображений (`LiveFeedFetcher`) |
 | **Участник 2** | Обработка действий, поиск и тестирование | Фильтрация, сортировка и сравнение игроков, разбор текстовых запросов, контроллер приложения, модульные тесты (`Qt5::Test`) |
-| **Участник 3** | Графический интерфейс Qt5 | `MainWindow` (навигация в стиле Football Manager), `PlayerCardWidget`, `FmAnalyticsWidget`, High-DPI, CMake |
+| **Мысягин Павел Аркадьевич** | Графический интерфейс Qt5 | `MainWindow` (навигация в стиле Football Manager), `PlayerCardWidget`, `FmAnalyticsWidget`, High-DPI, CMake |
 
 Подробнее по этапам (Недели 1–4): [docs/TEAM_PLAN.md](docs/TEAM_PLAN.md)
 Схема классов архитектуры: [docs/CLASS_DIAGRAM.md](docs/CLASS_DIAGRAM.md)
