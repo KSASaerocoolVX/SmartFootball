@@ -21,6 +21,12 @@ add_executable(smartfootball
     src/logic/commands/SortCommand.cpp
     src/ui/MainWindow.h
     src/ui/MainWindow.cpp
+    src/ui/DemoData.h
+    src/ui/DemoData.cpp
+    src/ui/LeaguePage.h
+    src/ui/LeaguePage.cpp
+    src/ui/ScoutingPage.h
+    src/ui/ScoutingPage.cpp
 )
 
 target_include_directories(smartfootball PRIVATE

@@ -1,5 +1,9 @@
 #include "ui/MainWindow.h"
 
+#include "ui/DemoData.h"
+#include "ui/LeaguePage.h"
+#include "ui/ScoutingPage.h"
+
 #include <QButtonGroup>
 #include <QFrame>
 #include <QHBoxLayout>
@@ -48,8 +52,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 }
 
 void MainWindow::setupUi() {
-    setWindowTitle("SmartFootball (Week 1 Skeleton)");
-    resize(1040, 640);
+    setWindowTitle("SmartFootball");
+    resize(1140, 680);
     setMinimumSize(860, 540);
 
     auto* central = new QWidget(this);
@@ -79,16 +83,23 @@ void MainWindow::setupUi() {
 
     m_pages = new QStackedWidget(central);
 
+    // Пока нет LeagueRepository, берём демо-данные.
+    const std::vector<Team> teams = DemoData::teams();
+    const std::vector<Player> players = DemoData::players();
+
+    auto* leaguePage = new LeaguePage(teams, players, m_pages);
+    m_scoutingPage = new ScoutingPage(teams, players, m_pages);
+
     struct NavSection {
         QString label;
-        QString placeholder;
+        QWidget* page;
     };
     const std::vector<NavSection> sections = {
-        {"League", "Планируются лиги и клубы."},
-        {"Scouting", "Планируются игроки, поиск и фильтры."},
-        {"Player Profile", "Планируется карточка игрока."},
-        {"Compare", "Планируется сравнение игроков."},
-        {"Shortlist", "Планируется список избранного."}
+        {"League", leaguePage},
+        {"Scouting", m_scoutingPage},
+        {"Player Profile", createSectionPage("Player Profile", "Планируется карточка игрока.", m_pages)},
+        {"Compare", createSectionPage("Compare", "Планируется сравнение игроков.", m_pages)},
+        {"Shortlist", createSectionPage("Shortlist", "Планируется список избранного.", m_pages)}
     };
 
     for (int i = 0; i < static_cast<int>(sections.size()); ++i) {
@@ -102,9 +113,15 @@ void MainWindow::setupUi() {
             btn->setChecked(true);
         }
 
-        m_pages->addWidget(createSectionPage(sections[i].label, sections[i].placeholder, m_pages));
+        m_pages->addWidget(sections[i].page);
     }
     railVBox->addStretch(1);
+
+    // Двойной клик по клубу в League -> его игроки в Scouting.
+    connect(leaguePage, &LeaguePage::teamActivated, this, [this](unsigned int teamId) {
+        m_scoutingPage->showTeam(teamId);
+        openPage(1);
+    });
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     connect(m_navGroup, &QButtonGroup::idClicked, m_pages, &QStackedWidget::setCurrentIndex);
@@ -125,7 +142,7 @@ void MainWindow::setupUi() {
     topHBox->setContentsMargins(18, 8, 18, 8);
     auto* headerTitle = new QLabel("SmartFootball", topBar);
     headerTitle->setObjectName("headerTitle");
-    auto* weekBadge = new QLabel("Week 1 Prototype", topBar);
+    auto* weekBadge = new QLabel("Week 2 Prototype", topBar);
     weekBadge->setObjectName("weekBadge");
     topHBox->addWidget(headerTitle);
     topHBox->addStretch(1);
@@ -136,7 +153,10 @@ void MainWindow::setupUi() {
     statusBar->setFixedHeight(26);
     auto* statusHBox = new QHBoxLayout(statusBar);
     statusHBox->setContentsMargins(16, 0, 16, 0);
-    auto* statusLbl = new QLabel("SmartFootball Week 1 Qt5 Window Ready", statusBar);
+    auto* statusLbl = new QLabel(QString("Демо-данные: %1 клубов, %2 игроков")
+                                     .arg(static_cast<int>(teams.size()))
+                                     .arg(static_cast<int>(players.size())),
+                                 statusBar);
     statusLbl->setObjectName("footerText");
     statusHBox->addWidget(statusLbl);
     statusHBox->addStretch(1);
@@ -148,6 +168,13 @@ void MainWindow::setupUi() {
     outerHBox->addWidget(rail);
     outerHBox->addLayout(mainCol, 1);
     setCentralWidget(central);
+}
+
+void MainWindow::openPage(int index) {
+    if (QAbstractButton* btn = m_navGroup->button(index)) {
+        btn->setChecked(true);
+    }
+    m_pages->setCurrentIndex(index);
 }
 
 void MainWindow::applyTheme() {
@@ -171,5 +198,21 @@ void MainWindow::applyTheme() {
         "QPushButton#navItem { background-color: transparent; border: none; border-left: 3px solid transparent; border-radius: 0px; text-align: left; padding: 11px 16px; color: #94a3b8; font-size: 9.5pt; font-weight: bold; }"
         "QPushButton#navItem:hover { background-color: #231f36; color: #f8fafc; }"
         "QPushButton#navItem:checked { background-color: #2c2447; color: #ffffff; border-left: 3px solid #a78bfa; }"
+
+        // Week 2: поля фильтров, кнопка сброса и таблицы
+        "QLineEdit, QComboBox { background-color: #14121f; border: 1px solid #312c4a; border-radius: 5px; padding: 5px 8px; color: #e2e8f0; min-height: 18px; }"
+        "QLineEdit:focus, QComboBox:focus { border: 1px solid #a78bfa; }"
+        "QComboBox::drop-down { border: none; width: 18px; }"
+        "QComboBox QAbstractItemView { background-color: #1f1c2e; border: 1px solid #312c4a; selection-background-color: #2c2447; color: #e2e8f0; }"
+        "QPushButton#secondaryButton { background-color: #2c2447; border: 1px solid #4c3d7a; border-radius: 5px; padding: 6px 14px; color: #e2e8f0; font-weight: bold; }"
+        "QPushButton#secondaryButton:hover { background-color: #3b2f63; }"
+        "QTableWidget { background-color: #1b1829; alternate-background-color: #211d33; border: 1px solid #312c4a; border-radius: 6px; selection-background-color: #4c1d95; selection-color: #ffffff; }"
+        "QHeaderView::section { background-color: #1b1829; color: #a78bfa; padding: 6px 8px; border: none; border-bottom: 1px solid #312c4a; font-weight: bold; }"
+        "QTableCornerButton::section { background-color: #1b1829; border: none; }"
+        "QScrollBar:vertical { background: #1b1829; width: 10px; margin: 0px; }"
+        "QScrollBar::handle:vertical { background: #3b2f63; border-radius: 4px; min-height: 24px; }"
+        "QScrollBar::handle:vertical:hover { background: #a78bfa; }"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }"
+        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }"
     );
 }
