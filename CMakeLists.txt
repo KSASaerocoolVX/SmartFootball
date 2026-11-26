@@ -13,6 +13,12 @@ find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
 
 add_executable(smartfootball
     src/main.cpp
+    src/model/Player.cpp
+    src/model/Team.cpp
+    src/logic/ScoutController.cpp
+    src/logic/commands/FindCommand.cpp
+    src/logic/commands/FilterCommand.cpp
+    src/logic/commands/SortCommand.cpp
     src/ui/MainWindow.h
     src/ui/MainWindow.cpp
 )
